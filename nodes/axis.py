@@ -32,10 +32,9 @@ class StreamThread(threading.Thread):
             rospy.sleep(2) # if stream stays intact we shouldn't get to this
 
     def formURL(self):
-        self.url = 'http://%s/mjpg/video.mjpg' % self.axis.hostname
-        self.url += "?fps=0&resolution=%dx%d" % (self.axis.width, 
-                                                            self.axis.height)
-        rospy.logdebug('opening ' + str(self.axis))
+        self.url = 'http://%s:%s/mjpg/video.mjpg' % (self.axis.hostname, self.axis.hostport)
+        self.url += "?fps=0&resolution=%dx%d" % (self.axis.width, self.axis.height)
+        rospy.loginfo('opening ' + str(self.axis))
 
     def authenticate(self):
         '''only try to authenticate if user/pass configured.  I have not
@@ -45,7 +44,8 @@ class StreamThread(threading.Thread):
             password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
             # Add the username and password, use default realm.
-            top_level_url = "http://" + self.axis.hostname
+            #top_level_url = "http://" + self.axis.hostname + self.axis.hostport
+            top_level_url = self.url
             password_mgr.add_password(None, top_level_url, self.axis.username, 
                                                             self.axis.password)
             if self.axis.use_encrypted_password :
@@ -65,8 +65,8 @@ class StreamThread(threading.Thread):
             self.fp = urllib2.urlopen(self.url, timeout=self.timeoutSeconds)
             return(True)
         except urllib2.URLError, e:
-            rospy.logwarn('Error opening URL %s' % (self.url) +
-                            'Possible timeout.  Looping until camera appears')
+            rospy.logwarn('Error opening URL %s Reason: %s. Looping until camera appears' % (self.url, e.reason))
+            # print e.reason
             return(False)
 
     def publishFramesContinuously(self):
@@ -136,9 +136,10 @@ class StreamThread(threading.Thread):
         self.axis.caminfo_pub.publish(cimsg)
 
 class Axis:
-    def __init__(self, hostname, username, password, width, height, frame_id, 
-                 camera_info_url, use_encrypted_password):
+    def __init__(self, hostname, hostport, username, password, width, height,
+                 frame_id, camera_info_url, use_encrypted_password):
         self.hostname = hostname
+        self.hostport = hostport
         self.username = username
         self.password = password
         self.width = width
@@ -170,9 +171,11 @@ class Axis:
 
 def main():
     rospy.init_node("axis_driver")
+    rospy.loginfo('axis_driver HELLO!')
 
     arg_defaults = {
-        'hostname': '192.168.0.90',       # default IP address
+        'hostname': '192.168.0.64',       # default IP address
+        'hostport': '8082',               # default port
         'username': 'root',               # default login name
         'password': '',
         'width': 640,
