@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Axis camera image driver. Based on:
 # https://code.ros.org/svn/wg-ros-pkg/branches/trunk_cturtle/sandbox/axis_camera
 # /axis.py
@@ -8,9 +6,9 @@
 import threading
 import urllib2
 
-import rospy 
+###import rospy 
 from sensor_msgs.msg import CompressedImage, CameraInfo
-import camera_info_manager
+###import camera_info_manager
 
 class StreamThread(threading.Thread):
     def __init__(self, axis):
@@ -29,12 +27,12 @@ class StreamThread(threading.Thread):
             self.authenticate()
             if self.openURL():
                 self.publishFramesContinuously()
-            rospy.sleep(2) # if stream stays intact we shouldn't get to this
+###            rospy.sleep(2) # if stream stays intact we shouldn't get to this
 
     def formURL(self):
         self.url = 'http://%s:%s/mjpg/video.mjpg' % (self.axis.hostname, self.axis.hostport)
         self.url += "?fps=0&resolution=%dx%d" % (self.axis.width, self.axis.height)
-        rospy.loginfo('opening ' + str(self.axis))
+###        rospy.loginfo('opening ' + str(self.axis))
 
     def authenticate(self):
         '''only try to authenticate if user/pass configured.  I have not
@@ -65,7 +63,7 @@ class StreamThread(threading.Thread):
             self.fp = urllib2.urlopen(self.url, timeout=self.timeoutSeconds)
             return(True)
         except urllib2.URLError, e:
-            rospy.logwarn('Error opening URL %s Reason: %s. Looping until camera appears' % (self.url, e.reason))
+###            rospy.logwarn('Error opening URL %s Reason: %s. Looping until camera appears' % (self.url, e.reason))
             # print e.reason
             return(False)
 
@@ -78,7 +76,7 @@ class StreamThread(threading.Thread):
                 self.publishMsg()
                 self.publishCameraInfoMsg()
             except:
-                rospy.loginfo('Timed out while trying to get message.')
+###                rospy.loginfo('Timed out while trying to get message.')
                 break
 
     def findBoundary(self):
@@ -105,7 +103,7 @@ class StreamThread(threading.Thread):
             try:
                 self.header[parts[0]] = parts[1]
             except:
-                rospy.logwarn('Problem encountered with image header.  Setting '
+###                rospy.logwarn('Problem encountered with image header.  Setting '
                                                     'content_length to zero')
                 self.header['Content-Length'] = 0 # set content_length to zero if 
                                             # there is a problem reading header
@@ -120,7 +118,7 @@ class StreamThread(threading.Thread):
     def publishMsg(self):
         '''Publish jpeg image as a ROS message'''
         self.msg = CompressedImage()
-        self.msg.header.stamp = rospy.Time.now()
+###        self.msg.header.stamp = rospy.Time.now()
         self.msg.header.frame_id = self.axis.frame_id
         self.msg.format = "jpeg"
         self.msg.data = self.img
@@ -128,12 +126,12 @@ class StreamThread(threading.Thread):
 
     def publishCameraInfoMsg(self):
         '''Publish camera info manager message'''
-        cimsg = self.axis.cinfo.getCameraInfo()
+###        cimsg = self.axis.cinfo.getCameraInfo()
         cimsg.header.stamp = self.msg.header.stamp
         cimsg.header.frame_id = self.axis.frame_id
         cimsg.width = self.axis.width
         cimsg.height = self.axis.height
-        self.axis.caminfo_pub.publish(cimsg)
+###        self.axis.caminfo_pub.publish(cimsg)
 
 class Axis:
     def __init__(self, hostname, hostport, username, password, width, height,
@@ -149,13 +147,13 @@ class Axis:
         self.use_encrypted_password = use_encrypted_password
         
         # generate a valid camera name based on the hostname
-        self.cname = camera_info_manager.genCameraName(self.hostname)
-        self.cinfo = camera_info_manager.CameraInfoManager(cname = self.cname,
-                                                   url = self.camera_info_url)
-        self.cinfo.loadCameraInfo()         # required before getCameraInfo()
+###        self.cname = camera_info_manager.genCameraName(self.hostname)
+###        self.cinfo = camera_info_manager.CameraInfoManager(cname = self.cname,
+###                                                   url = self.camera_info_url)
+###        self.cinfo.loadCameraInfo()         # required before getCameraInfo()
         self.st = None
-        self.pub = rospy.Publisher("image_raw/compressed", CompressedImage, self, queue_size=1)
-        self.caminfo_pub = rospy.Publisher("camera_info", CameraInfo, self, queue_size=1)
+###        self.pub = rospy.Publisher("image_raw/compressed", CompressedImage, self, queue_size=1)
+###        self.caminfo_pub = rospy.Publisher("camera_info", CameraInfo, self, queue_size=1)
 
     def __str__(self):
         """Return string representation."""
@@ -170,8 +168,8 @@ class Axis:
 
 
 def main():
-    rospy.init_node("axis_driver")
-    rospy.loginfo('axis_driver HELLO!')
+###    rospy.init_node("axis_driver")
+###    rospy.loginfo('axis_driver HELLO!')
 
     arg_defaults = {
         'hostname': '192.168.0.64',       # default IP address
@@ -183,9 +181,9 @@ def main():
         'frame_id': 'axis_camera',
         'camera_info_url': '',
         'use_encrypted_password' : False}
-    args = updateArgs(arg_defaults)
+###    args = updateArgs(arg_defaults)
     Axis(**args)
-    rospy.spin()
+###    rospy.spin()
 
 def updateArgs(arg_defaults):
     '''Look up parameters starting in the driver's private parameter space, but
