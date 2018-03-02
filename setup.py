@@ -1,10 +1,36 @@
-#!/usr/bin/env python
+from setuptools import setup
 
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+package_name = 'axis_camera'
 
-d = generate_distutils_setup(
-    install_requires=['rospy', 'urllib2'],
-    )
-
-setup(**d)
+setup(
+    name=package_name,
+    version='0.2.1',
+    packages=[],
+    py_modules=[
+        'nodes.axis'],
+    data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+    ],
+    install_requires=['setuptools'],
+    author='Mikael Arguedas',
+    author_email='mikael@osrfoundation.org',
+    maintainer='Mikael Arguedas',
+    maintainer_email='mikael@osrfoundation.org',
+    keywords=['ROS'],
+    classifiers=[
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python',
+        'Topic :: Software Development',
+    ],
+    description='Axis camera using rclpy.',
+    license='Apache License, Version 2.0',
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+            'axis = nodes.axis:main',
+        ],
+    },
+)
