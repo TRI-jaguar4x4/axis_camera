@@ -4,6 +4,7 @@
 #
 
 import base64
+import time
 
 import PIL
 from PIL import Image as PILImage
@@ -67,7 +68,7 @@ class StreamThread(threading.Thread):
                 self.findBoundary()
                 self.getImage()
                 self.publishMsg()
-###                self.publishCameraInfoMsg()
+                self.publishCameraInfoMsg()
             except Exception as e:
                 print("Exception publishing: ", e.reason)
 ###                rospy.loginfo('Timed out while trying to get message.')
@@ -116,8 +117,11 @@ class StreamThread(threading.Thread):
 ###        self.msg = CompressedImage()
         self.msg = Image()
 
-###        self.msg.header.stamp = rospy.Time.now()
 ###        self.msg.format = "jpeg"
+        now = time.time()
+        sec = int(now)
+        self.msg.header.stamp.sec = sec
+        self.msg.header.stamp.nanosec = int((now - sec) * 1e9)
         self.msg.header.frame_id = self.axis.frame_id
         self.msg.width = self.axis.width
         self.msg.height = self.axis.height
@@ -139,12 +143,12 @@ class StreamThread(threading.Thread):
 
     def publishCameraInfoMsg(self):
         '''Publish camera info manager message'''
-###        cimsg = self.axis.cinfo.getCameraInfo()
+        cimsg = CameraInfo()
         cimsg.header.stamp = self.msg.header.stamp
         cimsg.header.frame_id = self.axis.frame_id
         cimsg.width = self.axis.width
         cimsg.height = self.axis.height
-###        self.axis.caminfo_pub.publish(cimsg)
+        self.axis.caminfo_pub.publish(cimsg)
 
 class Axis(Node):
     def __init__(self, hostname, hostport, username, password, width, height,
@@ -171,8 +175,8 @@ class Axis(Node):
         self.st = StreamThread(self)
         self.st.start()
 ###        self.pub = rospy.Publisher("image_raw/compressed", CompressedImage, self, queue_size=1)
-###        self.caminfo_pub = rospy.Publisher("camera_info", CameraInfo, self, queue_size=1)
         self.publisher_ = self.create_publisher(Image, 'image')
+        self.caminfo_pub = self.create_publisher(CameraInfo, "camera_info")
 
     def __str__(self):
         """Return string representation."""
