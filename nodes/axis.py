@@ -6,20 +6,13 @@
 import base64
 import time
 
-import PIL
-from PIL import Image as PILImage
-
 import rclpy
 from rclpy.node import Node
-
-from sensor_msgs.msg import Image
 
 import threading
 import urllib.request
 
-###import rospy 
 from sensor_msgs.msg import CompressedImage, CameraInfo
-###import camera_info_manager
 
 class StreamThread(threading.Thread):
     def __init__(self, axis):
@@ -37,12 +30,10 @@ class StreamThread(threading.Thread):
             self.formURL()
             if self.authenticateAndOpen():
                 self.publishFramesContinuously()
-###            rospy.sleep(2) # if stream stays intact we shouldn't get to this
 
     def formURL(self):
         self.url = 'http://%s:%s/mjpg/video.mjpg' % (self.axis.hostname, self.axis.hostport)
         self.url += "?fps=0&resolution=%dx%d" % (self.axis.width, self.axis.height)
-###        rospy.loginfo('opening ' + str(self.axis))
 
     def authenticateAndOpen(self):
         '''only try to authenticate if user/pass configured,
@@ -115,7 +106,6 @@ class StreamThread(threading.Thread):
     def publishMsg(self):
         '''Publish jpeg image as a ROS message'''
         self.msg = CompressedImage()
-        self.rawmsg = Image()
 
         now = time.time()
         sec = int(now)
@@ -125,23 +115,8 @@ class StreamThread(threading.Thread):
         self.msg.header.frame_id = self.axis.frame_id
         self.msg.format = "jpeg"
 
-        self.rawmsg.header = self.msg.header
-        self.rawmsg.width = self.axis.width
-        self.rawmsg.height = self.axis.height
-        self.rawmsg.encoding = "rgb8"
-
-        try:
-            im = PILImage.frombuffer("RGB",
-                                     (self.rawmsg.width,self.rawmsg.height),
-                                     self.img, "jpeg", "RGB", "")
-        except Exception as e:
-            print ("Exception loading PILImage.frombuffer: ", e)
-
         self.msg.data = self.img
-        self.rawmsg.data = im.tobytes()
-        self.rawmsg.step = int(len(self.rawmsg.data)/self.rawmsg.height)
         self.axis.publisher_.publish(self.msg)
-        self.axis.rawPublisher_.publish(self.rawmsg)
 
 
 
@@ -174,13 +149,10 @@ class Axis(Node):
 ###        self.cname = camera_info_manager.genCameraName(self.hostname)
 ###        self.cinfo = camera_info_manager.CameraInfoManager(cname = self.cname,
 ###                                                   url = self.camera_info_url)
-###        self.cinfo.loadCameraInfo()         # required before getCameraInfo()
         self.st = None
         self.st = StreamThread(self)
         self.st.start()
-###        self.pub = rospy.Publisher("image_raw/compressed", CompressedImage, self, queue_size=1)
         self.publisher_ = self.create_publisher(CompressedImage, 'image_raw/compressed')
-        self.rawPublisher_ = self.create_publisher(Image, 'image')
         self.caminfo_pub = self.create_publisher(CameraInfo, "camera_info")
 
     def __str__(self):
