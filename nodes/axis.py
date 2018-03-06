@@ -94,7 +94,6 @@ class StreamThread(threading.Thread):
 ###                                                    'content_length to zero')
                 self.header['Content-Length'] = 0 # set content_length to zero if 
                                             # there is a problem reading header
-        print(self.header)
         self.content_length = int(self.header['Content-Length'])
 
     def getImageData(self):
