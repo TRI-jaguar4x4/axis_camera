@@ -33,7 +33,7 @@ class StreamThread(threading.Thread):
 
     def formURL(self):
         self.url = 'http://%s:%s/mjpg/video.mjpg' % (self.axis.hostname, self.axis.hostport)
-        self.url += "?fps=0&resolution=%dx%d" % (self.axis.width, self.axis.height)
+        self.url += "?fps=%d&resolution=%dx%d" % (self.axis.frame_rate, self.axis.width, self.axis.height)
 
     def authenticateAndOpen(self):
         '''only try to authenticate if user/pass configured,
@@ -118,7 +118,6 @@ class StreamThread(threading.Thread):
         self.axis.publisher_.publish(self.msg)
 
 
-
     def publishCameraInfoMsg(self):
         '''Publish camera info manager message'''
         cimsg = CameraInfo()
@@ -130,13 +129,14 @@ class StreamThread(threading.Thread):
 
 class Axis(Node):
     def __init__(self, hostname, hostport, username, password, width, height,
-                 frame_id, camera_info_url, use_encrypted_password):
+                 frame_rate, frame_id, camera_info_url, use_encrypted_password):
         self.hostname = hostname
         self.hostport = hostport
         self.username = username
         self.password = password
         self.width = width
         self.height = height
+        self.frame_rate = frame_rate
         self.frame_id = frame_id
         self.camera_info_url = camera_info_url
         self.use_encrypted_password = use_encrypted_password
@@ -156,7 +156,8 @@ class Axis(Node):
 
     def __str__(self):
         """Return string representation."""
-        return(self.hostname + ',' + self.username + ',' + self.password +
+        return(self.hostname + ':' + self.hostport + ','
+               + self.username + ',' + '<password>' + 'fps:' + self.frame_rate +
                        '(' + str(self.width) + 'x' + str(self.height) + ')')
 
     def peer_subscribe(self, topic_name, topic_publish, peer_publish):
@@ -176,6 +177,7 @@ def main():
         'password': 'drrobot',
         'width': 640,
         'height': 480,
+        'frame_rate': 10,                  # 0 = unlimited
         'frame_id': 'axis_camera',
         'camera_info_url': '',
         'use_encrypted_password' : False}
