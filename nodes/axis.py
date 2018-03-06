@@ -114,30 +114,34 @@ class StreamThread(threading.Thread):
 
     def publishMsg(self):
         '''Publish jpeg image as a ROS message'''
-###        self.msg = CompressedImage()
-        self.msg = Image()
+        self.msg = CompressedImage()
+        self.rawmsg = Image()
 
-###        self.msg.format = "jpeg"
         now = time.time()
         sec = int(now)
+
         self.msg.header.stamp.sec = sec
         self.msg.header.stamp.nanosec = int((now - sec) * 1e9)
         self.msg.header.frame_id = self.axis.frame_id
-        self.msg.width = self.axis.width
-        self.msg.height = self.axis.height
-        self.msg.encoding = "rgb8"
-        self.msg.step = int(len(self.msg.data)/self.msg.height)
+        self.msg.format = "jpeg"
+
+        self.rawmsg.header = self.msg.header
+        self.rawmsg.width = self.axis.width
+        self.rawmsg.height = self.axis.height
+        self.rawmsg.encoding = "rgb8"
 
         try:
             im = PILImage.frombuffer("RGB",
-                                     (self.msg.width,self.msg.height),
+                                     (self.rawmsg.width,self.rawmsg.height),
                                      self.img, "jpeg", "RGB", "")
         except Exception as e:
             print ("Exception loading PILImage.frombuffer: ", e)
 
-###        self.msg.data = self.img
-        self.msg.data = im.tobytes()
+        self.msg.data = self.img
+        self.rawmsg.data = im.tobytes()
+        self.rawmsg.step = int(len(self.rawmsg.data)/self.rawmsg.height)
         self.axis.publisher_.publish(self.msg)
+        self.axis.rawPublisher_.publish(self.rawmsg)
 
 
 
@@ -175,7 +179,8 @@ class Axis(Node):
         self.st = StreamThread(self)
         self.st.start()
 ###        self.pub = rospy.Publisher("image_raw/compressed", CompressedImage, self, queue_size=1)
-        self.publisher_ = self.create_publisher(Image, 'image')
+        self.publisher_ = self.create_publisher(CompressedImage, 'image_raw/compressed')
+        self.rawPublisher_ = self.create_publisher(Image, 'image')
         self.caminfo_pub = self.create_publisher(CameraInfo, "camera_info")
 
     def __str__(self):
