@@ -43,7 +43,7 @@ class StreamThread(threading.Thread):
             credentials = ("%s:%s" % (self.axis.username, self.axis.password))
             encoded = base64.b64encode(credentials.encode("ascii"))
             req.add_header("Authorization","Basic %s" % encoded.decode("ascii"))
-            
+
         try:
             self.fp = urllib.request.urlopen(req)
             return(True)
@@ -92,7 +92,7 @@ class StreamThread(threading.Thread):
                 print("Exception getting header: ", e.reason)
 ###                rospy.logwarn('Problem encountered with image header.  Setting '
 ###                                                    'content_length to zero')
-                self.header['Content-Length'] = 0 # set content_length to zero if 
+                self.header['Content-Length'] = 0 # set content_length to zero if
                                             # there is a problem reading header
         self.content_length = int(self.header['Content-Length'])
 
@@ -143,7 +143,7 @@ class Axis(Node):
 
         super().__init__('axis_camera')
 
-    
+
         # generate a valid camera name based on the hostname
 ###        self.cname = camera_info_manager.genCameraName(self.hostname)
 ###        self.cinfo = camera_info_manager.CameraInfoManager(cname = self.cname,
@@ -192,12 +192,12 @@ def main():
     # when the garbage collector destroys the node object)
     axis_publisher.destroy_node()
     rclpy.shutdown()
-    
+
 def updateArgsMini(arg_defaults):
     args = {}
     for name, val in arg_defaults.items():
         args[name] = val
-    return(args)    
+    return(args)
 
 def updateArgs(arg_defaults):
     '''Look up parameters starting in the driver's private parameter space, but
