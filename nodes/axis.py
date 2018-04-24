@@ -8,6 +8,7 @@ import time
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 
 import threading
 import urllib.request
@@ -151,8 +152,8 @@ class Axis(Node):
         self.st = None
         self.st = StreamThread(self)
         self.st.start()
-        self.publisher_ = self.create_publisher(CompressedImage, 'image_raw/compressed')
-        self.caminfo_pub = self.create_publisher(CameraInfo, "camera_info")
+        self.publisher_ = self.create_publisher(CompressedImage, 'image_raw/compressed', qos_profile=qos_profile_sensor_data)
+        self.caminfo_pub = self.create_publisher(CameraInfo, "camera_info", qos_profile=qos_profile_sensor_data)
 
     def __str__(self):
         """Return string representation."""

@@ -6,8 +6,8 @@
     Python ROS drivers for accessing an Axis camera's MJPG
     stream. Also provides control for PTZ cameras.
   </description>
-  <maintainer email="sam.pfeiffer@pal-robotics.com">Sammy Pfeiffer</maintainer>
-  <maintainer email="ros-orphaned-packages@googlegroups.com">ROS Orphaned Package Maintainers</maintainer>
+  <maintainer email="toffee.albina@tri.global">Toffee Albina</maintainer>
+  <author>Sammy Pfeiffer</author>
   <author>Ryan Gariepy</author>
   <license>BSD</license>
 
@@ -18,7 +18,7 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>rclpy</build_depend>
-  
+
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
